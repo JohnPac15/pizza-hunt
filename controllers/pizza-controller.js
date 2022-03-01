@@ -1,20 +1,30 @@
 const { Pizza } = require("../models");
-const { db } = require("../models/Pizza");
 
 const pizzaController = {
   //get all pizza
   getAllPizza(req, res) {
     Pizza.find({})
-      .then((dbPizzaData) => res.json(dbPizzaData))
-      .catch((err) => {
+      .populate({
+        path: 'comments',
+        select: '-__v'
+      })
+      .select('-__v')
+      .sort({ _id: -1 })
+      .then(dbPizzaData => res.json(dbPizzaData))
+      .catch(err => {
         console.log(err);
-        res.status(400).json(err);
+        res.sendStatus(400);
       });
   },
 
   //pizza by ID
   getPizzaById({ params }, res) {
     Pizza.findOne({ _id: params.id })
+      .populate({
+        path: 'comments',
+        select: '-__v'
+      })
+      .select('-__v')
       .then((dbPizzaData) => {
         // If no pizza is found, send 404
         if (!dbPizzaData) {
@@ -32,8 +42,8 @@ const pizzaController = {
   //create Pizza
   createPizza({ body }, res) {
     Pizza.create(body)
-      .then((dbPizzaData) => res.json(dbPizzaData))
-      .catch((err) => res.status(400).json(err));
+      .then(dbPizzaData => res.json(dbPizzaData))
+      .catch(err => res.json(err));
   },
 
   // update Pizza
